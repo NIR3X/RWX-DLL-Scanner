@@ -138,5 +138,6 @@ int main() {
 			std::cout << (isX32 ? "32-bit" : "64-bit") << " dll: \"" << dll << "\"" << std::endl << std::endl;
 		}
 	}
-	system("pause");
+	std::cout << "Press enter to exit..." << std::endl;
+	std::cin.get();
 }
