@@ -79,7 +79,7 @@ int main() {
 			
 			bool isRWX = false;
 
-			auto checkDllNtHeaders = [&] <typename T> (T ntHeaders) {
+			auto isSignedRWX = [&] <typename T> (T ntHeaders) {
 				DWORD securityDirAddr = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress,
 					securityDirSize = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].Size;
 				if (securityDirAddr == 0 || securityDirSize == 0) {
@@ -108,13 +108,13 @@ int main() {
 
 			switch (ntHeaders->OptionalHeader.Magic) {
 			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
-				if (!checkDllNtHeaders(ntHeaders)) {
+				if (!isSignedRWX(ntHeaders)) {
 					continue;
 				}
 				isX32 = true;
 				break;
 			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
-				if (!checkDllNtHeaders((PIMAGE_NT_HEADERS64)ntHeaders)) {
+				if (!isSignedRWX((PIMAGE_NT_HEADERS64)ntHeaders)) {
 					continue;
 				}
 				isX32 = false;
