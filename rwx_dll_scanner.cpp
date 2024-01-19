@@ -77,58 +77,54 @@ int main() {
 				continue;
 			}
 			
-			bool isRWX = false, isX32 = true;
+			bool isRWX = false;
+
+			auto checkDllNtHeaders = [&] <typename T> (T ntHeaders) {
+				DWORD securityDirAddr = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress,
+					securityDirSize = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].Size;
+				if (securityDirAddr == 0 || securityDirSize == 0) {
+					UnmapViewOfFile(view);
+					CloseHandle(mapping);
+					CloseHandle(file);
+					return false;
+				}
+
+				PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)ntHeaders + sizeof(*ntHeaders));
+				for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; ++i, ++sectionHeader) {
+					if (sectionHeader->Misc.VirtualSize >= MINIMAL_SECTION_SIZE &&
+						sectionHeader->Characteristics & IMAGE_SCN_MEM_READ &&
+						sectionHeader->Characteristics & IMAGE_SCN_MEM_WRITE &&
+						sectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) {
+						isRWX = true;
+						std::string sectionName = { sectionHeader->Name, sectionHeader->Name + 8 };
+						std::cout << "section" << i << ": \"" << sectionName.c_str() << "\"" << std::endl;
+					}
+				}
+
+				return true;
+			};
+
+			bool isX32;
 
 			switch (ntHeaders->OptionalHeader.Magic) {
-			case IMAGE_NT_OPTIONAL_HDR32_MAGIC: {
-					DWORD securityDirAddr = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress,
-						securityDirSize = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].Size;
-					if (securityDirAddr == 0 || securityDirSize == 0) {
-						UnmapViewOfFile(view);
-						CloseHandle(mapping);
-						CloseHandle(file);
-						continue;
-					}
-
-					PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)ntHeaders + sizeof(IMAGE_NT_HEADERS32));
-					for (int i = 0; i < ntHeaders->FileHeader.NumberOfSections; ++i, ++sectionHeader) {
-						if (sectionHeader->Misc.VirtualSize >= MINIMAL_SECTION_SIZE &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_READ &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_WRITE &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) {
-							isRWX = true;
-							std::string sectionName = { sectionHeader->Name, sectionHeader->Name + 8 };
-							std::cout << "section" << i << ": \"" << sectionName.c_str() << "\"" << std::endl;
-						}
-					}
+			case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+				if (!checkDllNtHeaders(ntHeaders)) {
+					continue;
 				}
+				isX32 = true;
 				break;
-			case IMAGE_NT_OPTIONAL_HDR64_MAGIC: {
-					isX32 = false;
-					PIMAGE_NT_HEADERS64 ntHeaders64 = (PIMAGE_NT_HEADERS64)ntHeaders;
-
-					DWORD securityDirAddr = ntHeaders64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].VirtualAddress,
-						securityDirSize = ntHeaders64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY].Size;
-					if (securityDirAddr == 0 || securityDirSize == 0) {
-						UnmapViewOfFile(view);
-						CloseHandle(mapping);
-						CloseHandle(file);
-						continue;
-					}
-
-					PIMAGE_SECTION_HEADER sectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)ntHeaders64 + sizeof(IMAGE_NT_HEADERS64));
-					for (int i = 0; i < ntHeaders64->FileHeader.NumberOfSections; ++i, ++sectionHeader) {
-						if (sectionHeader->Misc.VirtualSize >= MINIMAL_SECTION_SIZE &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_READ &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_WRITE &&
-							sectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) {
-							isRWX = true;
-							std::string sectionName = { sectionHeader->Name, sectionHeader->Name + 8 };
-							std::cout << "section" << i << ": \"" << sectionName.c_str() << "\"" << std::endl;
-						}
-					}
+			case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
+				if (!checkDllNtHeaders((PIMAGE_NT_HEADERS64)ntHeaders)) {
+					continue;
 				}
+				isX32 = false;
 				break;
+			default:
+				// std::cerr << "Invalid optional header magic in " << dll << " file!" << std::endl;
+				UnmapViewOfFile(view);
+				CloseHandle(mapping);
+				CloseHandle(file);
+				continue;
 			}
 
 			UnmapViewOfFile(view);
