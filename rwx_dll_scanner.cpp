@@ -131,10 +131,11 @@ int main() {
 				break;
 			}
 
+			UnmapViewOfFile(view);
+			CloseHandle(mapping);
+			CloseHandle(file);
+
 			if (!isRWX) {
-				UnmapViewOfFile(view);
-				CloseHandle(mapping);
-				CloseHandle(file);
 				continue;
 			}
 
