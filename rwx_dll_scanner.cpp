@@ -139,5 +139,7 @@ int main() {
 		}
 	}
 	std::cout << "Press enter to exit..." << std::endl;
-	std::cin.get();
+	while (GetForegroundWindow() != GetConsoleWindow() || !(GetAsyncKeyState(VK_RETURN) & 0x8000)) {
+		Sleep(1);
+	}
 }
