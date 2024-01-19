@@ -1,4 +1,4 @@
-# RWX-DLL-Scanner - Find signed RWX dlls
+# RWX DLL Scanner - Find signed RWX dlls
 
 ## Overview
 
