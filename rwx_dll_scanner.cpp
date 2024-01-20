@@ -139,7 +139,8 @@ int main() {
 		}
 	}
 	std::cout << "Press enter to exit..." << std::endl;
-	while (GetForegroundWindow() != GetConsoleWindow() || !(GetAsyncKeyState(VK_RETURN) & 0x8000)) {
-		Sleep(1);
+	std::cout << "Press CTRL+C to exit" << std::endl;
+	for (;;) {
+		Sleep(10);
 	}
 }
