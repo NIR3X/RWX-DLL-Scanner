@@ -138,7 +138,6 @@ int main() {
 			std::cout << (isX32 ? "32-bit" : "64-bit") << " dll: \"" << dll << "\"" << std::endl << std::endl;
 		}
 	}
-	std::cout << "Press enter to exit..." << std::endl;
 	std::cout << "Press CTRL+C to exit" << std::endl;
 	for (;;) {
 		Sleep(10);
