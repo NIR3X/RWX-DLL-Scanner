@@ -17,7 +17,7 @@ RWX DLL Scanner is a utility written in C++ that scans a list of DLL files to id
 2. Run the executable, and it will process each DLL file in the list.
 
 ```bash
-rwx_dll_scanner.exe
+RWXDLLScanner.exe
 ```
 
 ## Finding DLL Files
@@ -25,7 +25,7 @@ rwx_dll_scanner.exe
 To generate the dlls.txt file, you can use the [DLL Finder](https://github.com/NIR3X/DLL-Finder) utility, which scans all available drives and extracts the list of DLL files.
 
 ```bash
-dll_finder.exe
+DllFinder.exe
 ```
 
 ## Building
@@ -33,7 +33,7 @@ dll_finder.exe
 Make sure you have a C++ compiler and the necessary dependencies installed. Use the following commands to build the executable:
 
 ```bash
-g++ -std=c++2a -Wall -O2 -march=x86-64 -fno-rtti rwx_dll_scanner.cpp -o rwx_dll_scanner.exe -s -static
+g++ -std=c++2a -Wall -O2 -march=x86-64 -fno-rtti RWXDLLScanner.cpp -o RWXDLLScanner.exe -s -static
 ```
 
 ## Example
